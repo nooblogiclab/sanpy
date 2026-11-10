@@ -1,0 +1,931 @@
+<style>
+  html { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { text-align: left; margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; background: #f1f3f6; color: #1a1d21; }
+  header.topbar { background: #0f2a44; color: #fff; padding: 16px 20px; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 10px rgba(0,0,0,.25); }
+  header.topbar h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
+  header.topbar p { margin: 4px 0 0; font-size: 13px; opacity: .85; }
+  header.topbar .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  header.topbar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { border: 1px solid #c9d1d9; background: #fff; color: #0f2a44; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .btn:hover { background: #e9eef4; }
+  .btn.primary { background: #1a7f37; border-color: #1a7f37; color: #fff; }
+  .btn.dark { background: #0f2a44; color: #fff; border-color: #0f2a44; }
+  .btn.active { background: #0f2a44; color: #fff; border-color: #0f2a44; }
+  .layout { display: grid; grid-template-columns: 270px 1fr; gap: 0; max-width: 1200px; margin: 0 auto; min-height: calc(100vh - 76px); }
+  aside.toc { background: #fff; border-right: 1px solid #dde3ea; padding: 14px; position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 76px); overflow: auto; }
+  aside.toc h3 { margin: 4px 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #5b6570; }
+  .toc button { display: block; width: 100%; text-align: left; border: 1px solid transparent; background: transparent; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 4px; color: #1a1d21; }
+  .toc button:hover { background: #eef2f7; }
+  .toc button.active { background: #0f2a44; color: #fff; }
+  .toc button span.n { display: inline-block; min-width: 26px; font-weight: 800; opacity: .75; }
+  main.stage { padding: 18px 18px 60px; }
+  .card { background: #fff; border: 1px solid #dde3ea; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .prac-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  .prac-head h2 { margin: 0; font-size: 19px; color: #0f2a44; }
+  .prac-head .meta { font-size: 12px; color: #5b6570; margin-top: 4px; }
+  .problem { background: #ffffff; border: 1px solid #c9d1d9; border-left: 4px solid #0f2a44; border-radius: 10px; padding: 12px 14px; margin: 12px 0; font-size: 14.5px; line-height: 1.7; color: #000; }
+  .problem b { color: #0f2a44; }
+  .problem code { background: #eef2f7; color: #0f2a44; padding: 1px 6px; border-radius: 6px; font-size: 13px; border: 1px solid #dde3ea; }
+  .qlabel { display: inline-block; background: #0f2a44; color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .08em; border-radius: 6px; padding: 3px 9px; margin-bottom: 8px; }
+  .qline { margin: 5px 0; }
+  .outlabel { font-size: 12px; font-weight: 800; letter-spacing: .06em; border-radius: 8px; padding: 8px 12px; margin: 10px 0 8px; border: 1px solid #0f2a44; }
+  .outlabel.screen { background: #0f2a44; color: #fff; }
+  .outlabel.text { background: #eaf4ec; color: #0f2a44; border-color: #1a7f37; }
+  .seclabel { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .05em; color: #0f2a44; background: #eef2f7; border: 1px solid #c9d1d9; border-radius: 999px; padding: 5px 12px; margin: 4px 0 6px; }
+  .tabs { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+  .tabs .btn { border-radius: 999px; }
+  .hint { font-size: 12.5px; color: #5b6570; margin: 8px 0; }
+  pre.codebox { background: #ffffff; color: #111111; border-radius: 12px; padding: 14px; overflow: auto; font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 14px; line-height: 1.6; border: 1.5px solid #9aa4b2; white-space: pre; tab-size: 4; }
+  pre.codebox .cmt { color: #6a737d; font-style: italic; }
+  pre.codebox .str { color: #0a7d2c; }
+  pre.codebox .kw { color: #0033cc; font-weight: 700; }
+  pre.codebox .num { color: #7a3e00; }
+  pre.codebox .fn { color: #6f42c1; }
+  .out-toggle { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+  .terminal { background: #0b0e14; border-radius: 12px; overflow: hidden; border: 1.5px solid #000; }
+  .terminal .titlebar { display: flex; align-items: center; gap: 8px; background: #161b22; padding: 9px 12px; color: #e6edf3; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .dots i:nth-child(1){ background:#ff5f56;} .dots i:nth-child(2){ background:#ffbd2e;} .dots i:nth-child(3){ background:#27c93f;}
+  .terminal pre { margin: 0; padding: 14px 16px; color: #e8f5e9; background: #0b0e14; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.65; white-space: pre-wrap; word-break: break-word; tab-size: 4; }
+  .plain { background: #fff; border: 1.5px solid #0f2a44; border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.65; color: #000; }
+  .plain table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13.5px; background: #fff; }
+  .plain th, .plain td { border: 1px solid #333; padding: 7px 9px; text-align: left; }
+  .plain th { background: #eef2f7; color: #000; }
+  .plain code { background: #eef2f7; color: #000; padding: 1px 6px; border-radius: 6px; font-size: 13px; border: 1px solid #c9d1d9; }
+  #plainBody { white-space: pre-wrap; font-family: ui-monospace, Consolas, Menlo, monospace; font-size: 13px; line-height: 1.7; color: #000; tab-size: 4; }
+  footer.signoff { max-width: 1200px; margin: 0 auto 30px; background: #0f2a44; color: #fff; border-radius: 12px; padding: 14px 18px; text-align: center; }
+  footer.signoff .name { font-size: 15px; font-weight: 800; letter-spacing: .04em; }
+  footer.signoff .tested { font-size: 12.5px; opacity: .92; margin-top: 4px; }
+  .navrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .pageinfo { font-size: 13px; color: #5b6570; }
+  .note { font-size: 12.5px; background: #fff8e1; border: 1px solid #f0d98c; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+  #printArea { display: none; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    aside.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid #dde3ea; }
+    aside.toc .list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  }
+  @media print {
+    header.topbar, aside.toc, .tabs, .out-toggle, .navrow, .no-print { display: none !important; }
+    body { background: #fff; color: #000; }
+    .layout { display: block; max-width: none; }
+    main.stage { padding: 0; }
+    .card { border: none; box-shadow: none; padding: 0; }
+    .problem { background: #fff !important; color: #000 !important; border: 1px solid #000; border-left: 4px solid #000; break-inside: avoid; }
+    .problem b { color: #000 !important; }
+    .problem code { background: #fff !important; color: #000 !important; border: 1px solid #000; }
+    .qlabel { background: #fff !important; color: #000 !important; border: 1px solid #000; }
+    pre.codebox { background: #fff !important; color: #000 !important; border: 1.5px solid #000; white-space: pre-wrap; break-inside: avoid; page-break-inside: avoid; font-size: 10pt !important; line-height: 1.55; }
+    pre.codebox span { color: #000 !important; font-weight: normal !important; font-style: normal !important; }
+    .program-section { break-inside: auto; page-break-inside: auto; }
+    .output-section { break-before: page; page-break-before: always; }
+    .terminal { background: #fff !important; border: 1.5px solid #000; }
+    .terminal .titlebar { background: #eee !important; color: #000 !important; border-bottom: 1.5px solid #000; }
+    .terminal pre { background: #fff !important; color: #000 !important; }
+    .dots { display: none !important; }
+    .outlabel { border: 1.5px solid #000; break-after: avoid; }
+    .outlabel.screen { background: #fff !important; color: #000 !important; }
+    .outlabel.text { background: #eee !important; color: #000 !important; }
+    .seclabel { border: 1px solid #000; background: #fff !important; color: #000 !important; }
+    .plain { border: 1.5px solid #000; }
+    .plain table { break-inside: avoid; }
+    .plain tr { break-inside: avoid; }
+    .plain th { background: #eee !important; color: #000 !important; }
+    .plain th, .plain td { border: 1px solid #000 !important; }
+    .note { background: #fff !important; border: 1px solid #000; }
+    #printArea { display: block; color: #000; }
+    #printArea h2 { margin: 0 0 6px; font-size: 18px; }
+    #printArea h3 { margin: 10px 0 5px; font-size: 14px; }
+    #printArea h4 { margin: 8px 0 5px; font-size: 13px; }
+    #printArea p { margin: 4px 0; }
+    #printArea .problem { padding: 8px 10px; margin: 6px 0; line-height: 1.5; }
+    #printArea table { break-inside: avoid; page-break-inside: avoid; }
+    #printArea tr { break-inside: avoid; page-break-inside: avoid; }
+    #printArea .qlabel { margin-bottom: 4px; }
+    #printArea .qline { margin: 2px 0; }
+    @page { margin: 11mm 10mm; }
+    #appArea { display: none; }
+  }
+</style>
+
+<header class="topbar">
+  <div class="row">
+    <div>
+      <h1>Numerical Methods with Python — Practical File (1–16)</h1>
+      <p>Page 1: Program (INPUT) &nbsp;•&nbsp; Page 2: Output — OUTPUT SCREEN</p>
+    </div>
+    <div class="actions no-print">
+      <button class="btn" id="printOneBtn">Print this practical</button>
+      <button class="btn" id="printAllBtn">Print all</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout" id="appArea">
+  <aside class="toc">
+    <h3>Practicals — index</h3>
+    <div class="list" id="tocList"></div>
+    <div class="hint">Tip: Program is always Page 1 (one seamless block). Switch to Page 2 for the official Output.</div>
+  </aside>
+  <main class="stage">
+    <div class="card">
+      <div class="prac-head">
+        <div>
+          <h2 id="pracTitle">Practical</h2>
+          <div class="meta" id="pracMeta"></div>
+        </div>
+        <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" id="copyProgBtn">Copy program</button>
+          <button class="btn" id="copyOutBtn">Copy output</button>
+        </div>
+      </div>
+      <div class="problem" id="pracProblem"></div>
+      <div class="tabs no-print">
+        <button class="btn active" id="tabProg">Page 1 — Program (INPUT)</button>
+        <button class="btn" id="tabOut">Page 2 — Output (OUTPUT)</button>
+      </div>
+      <div id="programPage" class="program-section">
+        <div class="seclabel">Page 1 — Program (INPUT)</div>
+        <div class="hint">INPUT program — one continuous block (flows naturally across pages when printing, no blank gaps).</div>
+        <pre class="codebox"><code id="codeEl"></code></pre>
+        <div class="note">How to run: copy into a <code>.py</code> file and run with <code>python practical_N.py</code>. Needs <code>numpy</code> for 7–8 and <code>matplotlib</code> for 8 only. At each prompt, type a value or just press Enter to use the default — the program also runs with no input at all (online compilers).</div>
+      </div>
+      <div id="outputPage" class="output-section" hidden>
+        <div class="seclabel">Page 2 — Output (OUTPUT)</div>
+        <div class="hint">OUTPUT — on a different page. Official output below.</div>
+        <div id="termView">
+          <div class="outlabel screen">OUTPUT SCREEN — exact terminal output (copy as-is)</div>
+          <div class="terminal">
+          <div class="titlebar"><span class="dots"><i></i><i></i><i></i></span><span id="termTitle">output — python</span></div>
+          <pre id="termPre"></pre>
+          </div>
+        </div>
+      </div>
+      <div class="navrow no-print">
+        <button class="btn dark" id="prevBtn">← Prev</button>
+        <span class="pageinfo" id="pageInfo"></span>
+        <button class="btn dark" id="nextBtn">Next →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="signoff no-print">
+  <div class="name">SANTOSH SINGH — MSc Mathematics</div>
+  <div class="tested">Programs are all tested and all outputs are seen during testing — no false output found.</div>
+</footer>
+
+<div id="printArea"></div>
+
+<script>
+let cur = 0;
+let tab = "program";
+let outMode = "terminal";
+
+const PRACTICALS = [
+{
+n: 1,
+title: "Regula-Falsi (False Position) — 2x = log10(x) + 7 in [3, 4]",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find a real root of the equation <b>2x = log10(x) + 7</b> between 3 and 4, correct to 3 decimal places, by the <b>Regula-Falsi (False Position)</b> method. Then generalize the program for any equation whose real root lies between a and b.</div><div class='qline'><b>Given:</b> <code>f(x) = 2x - log10(x) - 7</code>, a = 3, b = 4, tolerance e = 0.00001.</div><div class='qline'><b>Method:</b> <code>x1 = (a*f(b) - b*f(a)) / (f(b) - f(a))</code> — replace the endpoint having the same sign as <code>f(x1)</code>; stop when <code>|f(x1)| &lt; e</code>.</div>",
+program: String.raw`import math
+
+def f(x):
+    # f(x) = 2x - log10(x) - 7 ; change this for any other equation
+    return 2 * x - math.log10(x) - 7
+
+def false_position(a, b, e, max_iter=100):
+    print("*** FALSE POSITION METHOD IMPLEMENTATION ***")
+    if f(a) * f(b) > 0:
+        print("Given guess values do not bracket the root.")
+        print("Try again with different guess values.")
+        return None
+    step = 1
+    x1 = a
+    while True:
+        x1 = (a * f(b) - b * f(a)) / (f(b) - f(a))
+        print(f"Iteration-{step}, x1 = {x1:0.6f} and f(x1) = {f(x1):0.6f}")
+        if abs(f(x1)) < e or step >= max_iter:
+            break
+        if f(a) * f(x1) < 0:
+            b = x1
+        else:
+            a = x1
+        step += 1
+    print(f"\nRequired root is : {x1:0.8f}")
+    return x1
+
+# Input Section (generalized: only f(x) above needs changing)
+# Tip: type each value, or just press Enter to use the shown default.
+_demo = ["3", "4", "0.00001"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+a = float(ask("First Guess: "))
+b = float(ask("Second Guess: "))
+e = float(ask("Tolerable Error: "))
+false_position(a, b, e)`,
+terminal: String.raw`First Guess: 3
+Second Guess: 4
+Tolerable Error: 0.00001
+*** FALSE POSITION METHOD IMPLEMENTATION ***
+Iteration-1, x1 = 3.787772 and f(x1) = -0.002839
+Iteration-2, x1 = 3.789276 and f(x1) = -0.000005
+
+Required root is : 3.78927580`,
+plain: "Root of 2x - log10(x) - 7 = 0 in [3, 4], tolerance e = 1e-5\n---------------------------------------------------------\nIteration    x1          f(x1)\n1            3.787772    -0.002839\n2            3.789276    -0.000005\n---------------------------------------------------------\nRequired root = 3.78927580  (3.789 to 3 decimals)"
+},
+{
+n: 2,
+title: "Newton-Raphson — cubic x³ − 5x − 9 = 0",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find a real root of the cubic equation <b>x^3 - 5x - 9 = 0</b>, correct to 4 decimal places, by the <b>Newton-Raphson</b> method.</div><div class='qline'><b>Given:</b> <code>f(x) = x^3 - 5x - 9</code>, <code>f'(x) = 3x^2 - 5</code>, initial guess x0 = 2, tolerance e = 0.000001, max steps N = 10.</div><div class='qline'><b>Method:</b> <code>x1 = x0 - f(x0)/f'(x0)</code>; stop when <code>|f(x1)| &lt; e</code>, else stop after N steps (not convergent).</div>",
+program: String.raw`def f(x):
+    return x**3 - 5*x - 9
+
+def g(x):
+    # derivative f'(x)
+    return 3*x*x - 5
+
+def newton_raphson(x0, e, N):
+    print("*** NEWTON RAPHSON METHOD IMPLEMENTATION ***")
+    for step in range(1, N + 1):
+        if g(x0) == 0.0:
+            print("Divide by zero error!")
+            return None
+        x1 = x0 - f(x0) / g(x0)
+        print(f"Iteration-{step}, x1 = {x1:0.6f}, f(x1) = {f(x1):0.6f} and g(x1) = {g(x1):0.6f}")
+        if abs(f(x1)) < e:
+            print(f"\nRequired root is: {x1:0.8f}")
+            return x1
+        x0 = x1
+    print("\nNot Convergent.")
+    return None
+
+# Input Section (press Enter on any prompt to use the shown default)
+_demo = ["2", "0.000001", "10"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+x0 = float(ask("Enter Guess: "))
+e = float(ask("Tolerable Error: "))
+N = int(float(ask("Maximum Steps: ")))
+newton_raphson(x0, e, N)`,
+terminal: String.raw`Enter Guess: 2
+Tolerable Error: 0.000001
+Maximum Steps: 10
+*** NEWTON RAPHSON METHOD IMPLEMENTATION ***
+Iteration-1, x1 = 3.571429, f(x1) = 18.696793 and g(x1) = 33.265306
+Iteration-2, x1 = 3.009378, f(x1) = 3.207103 and g(x1) = 22.169063
+Iteration-3, x1 = 2.864712, f(x1) = 0.185915 and g(x1) = 19.619726
+Iteration-4, x1 = 2.855236, f(x1) = 0.000771 and g(x1) = 19.457121
+Iteration-5, x1 = 2.855197, f(x1) = 0.000000 and g(x1) = 19.456442
+
+Required root is: 2.85519654`,
+plain: "f(x) = x^3 - 5x - 9, f'(x) = 3x^2 - 5, x0 = 2, e = 1e-6\n---------------------------------------------------------\nStep    x1          f(x1)         f'(x1)\n1       3.571429    18.696793     33.265306\n2       3.009378    3.207103      22.169063\n3       2.864712    0.185915      19.619726\n4       2.855236    0.000771      19.457121\n5       2.855197    0.000000      19.456442\n---------------------------------------------------------\nRequired root = 2.85519654  (2.8552 to 4 decimals)"
+},
+{
+n: 3,
+title: "Double root of x³ − x² − x + 1 = 0 (generalized Newton)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find the double root of the equation <b>x^3 - x^2 - x + 1 = 0</b> by the <b>generalized Newton</b> formula.</div><div class='qline'><b>Given:</b> <code>x^3 - x^2 - x + 1 = (x-1)^2 (x+1)</code>, so the double root is x = 1. Start x0 = 0.8, 2 iterations.</div><div class='qline'><b>Method (multiplicity 2):</b> iterate on f' — <code>r = x0 - f'(x0)/f''(x0)</code>, with <code>f'(x) = 3x^2 - 2x - 1</code>, <code>f''(x) = 6x - 2</code>.</div>",
+program: String.raw`def f(x):
+    return x**3 - x*x - x + 1
+
+def g(x):
+    # f'(x)
+    return 3*x*x - 2*x - 1
+
+def h(x):
+    # f''(x)
+    return 6*x - 2
+
+# Input Section (press Enter on any prompt to use the shown default)
+_demo = ["0.8", "2"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+x0 = float(ask("Initial guess: "))
+b = int(float(ask("Number of iterations: ")))
+
+for p in range(1, b + 1):
+    # double root: iterate on f' (since f = f' = 0 there)
+    r = x0 - (g(x0) / h(x0))
+    print(f"root = {r} at iteration {p}")
+    x0 = r`,
+terminal: String.raw`Initial guess: 0.8
+Number of iterations: 2
+root = 1.0428571428571427 at iteration 1
+root = 1.001294343240652 at iteration 2`,
+plain: "f(x) = x^3 - x^2 - x + 1 = (x-1)^2 (x+1)\nDouble root at x = 1\n---------------------------------------------------------\nStart x0 = 0.8\niteration 1 : r = 1.04285714\niteration 2 : r = 1.00129434   -> converging to 1"
+},
+{
+n: 4,
+title: "Square root — √12 by Newton (generalized to √N)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Evaluate <b>square root of 12</b> by Newton's formula, correct to 3 decimal places. Generalize the program for square root of any N.</div><div class='qline'><b>Given:</b> N = 12.</div><div class='qline'><b>Method (Heron):</b> <code>x_new = (x + N/x) / 2</code>, repeated until successive values agree.</div>",
+program: String.raw`def newton_sqrt(n, tol=1e-10):
+    # generalized for any N > 0
+    approx = 0.5 * n
+    while True:
+        better = 0.5 * (approx + n / approx)
+        if abs(better - approx) < tol:
+            return better
+        approx = better
+
+# press Enter to use the default (12)
+_demo = ["12"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+n = float(ask("Enter number: "))
+print(newton_sqrt(n))`,
+terminal: String.raw`Enter number: 12
+3.4641016151377544`,
+plain: "sqrt(12) by Newton, x_new = (x + 12/x)/2\n---------------------------------------------------------\nsqrt(12) = 3.4641016151...\nRounded to 3 decimals : 3.464"
+},
+{
+n: 5,
+title: "Cube root — ∛N by Newton (verify N = 12)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Obtain the <b>cube root of a positive integer N</b> by Newton's formula, and verify it for N = 12.</div><div class='qline'><b>Given:</b> N = 12.</div><div class='qline'><b>Method:</b> <code>x_new = (2x + N/x^2) / 3</code>. Note: the form <code>0.3*(x + N/x)</code> printed in some copies is NOT Newton's method for cube roots and gives a wrong value.</div>",
+program: String.raw`def cube_root(n, tol=1e-10):
+    # Newton for x^3 - N = 0 : x = (2x + N/x^2)/3
+    x = n / 3.0 if n >= 1 else 1.0
+    while True:
+        x_new = (2*x + n / (x*x)) / 3.0
+        if abs(x_new - x) < tol:
+            return x_new
+        x = x_new
+
+# press Enter to use the default (12)
+_demo = ["12"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+n = float(ask("Enter positive integer N: "))
+print(cube_root(n))`,
+terminal: String.raw`Enter positive integer N: 12
+2.2894284851066637`,
+plain: "Cube root of 12 by Newton, x_new = (2x + 12/x^2)/3\n---------------------------------------------------------\ncbrt(12) = 2.2894284851...\nRounded : 2.289\nCheck : 2.2894284851^3 = 12.000000"
+},
+{
+n: 6,
+title: "Newton divided difference — cubic through 4 points, y(8)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find the <b>cubic polynomial</b> taking the values <b>y(1) = 24, y(3) = 120, y(5) = 336, y(7) = 720</b>, and hence find <b>y(8)</b>, by <b>Newton's divided-difference interpolation</b>.</div><div class='qline'><b>Given:</b> x = [1, 3, 5, 7], y = [24, 120, 336, 720]; interpolate at value = 8.</div><div class='qline'><b>Method:</b> divided-difference table, then <code>y = y0 + p1*(v-x0) + p2*(v-x0)(v-x1) + p3*(v-x0)(v-x1)(v-x2)</code>. Result: <b>990.0</b>.</div>",
+program: String.raw`def proterm(i, value, x):
+    pro = 1
+    for j in range(i):
+        pro = pro * (value - x[j])
+    return pro
+
+def divided_diff_table(x, y, n):
+    for i in range(1, n):
+        for j in range(n - i):
+            y[j][i] = (y[j][i-1] - y[j+1][i-1]) / (x[j] - x[i+j])
+    return y
+
+def apply_formula(value, x, y, n):
+    s = y[0][0]
+    for i in range(1, n):
+        s = s + proterm(i, value, x) * y[0][i]
+    return s
+
+def print_diff_table(y, n):
+    for i in range(n):
+        for j in range(n - i):
+            print(f"{round(y[i][j], 4)}\t", end=" ")
+        print()
+
+n = 4
+x = [1, 3, 5, 7]
+y = [[0 for _ in range(10)] for _ in range(10)]
+y[0][0] = 24
+y[1][0] = 120
+y[2][0] = 336
+y[3][0] = 720
+
+y = divided_diff_table(x, y, n)
+print_diff_table(y, n)
+
+value = 8
+print(f"\nValue at {value} is {round(apply_formula(value, x, y, n), 2)}")`,
+terminal: String.raw`24	 48.0	 15.0	 1.0	 
+120	 108.0	 21.0	 
+336	 192.0	 
+720	 
+
+Value at 8 is 990.0`,
+plain: "Newton divided differences for (1,24) (3,120) (5,336) (7,720)\n---------------------------------------------------------\nx      y       d1       d2      d3\n1      24      48.0     15.0    1.0\n3      120     108.0    21.0\n5      336     192.0\n7      720\n---------------------------------------------------------\ny(8) = 24 + 48*7 + 15*7*5 + 1*7*5*3 = 990.0"
+},
+{
+n: 7,
+title: "Linear regression — fit y = a₀ + a₁x (4 points)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Fit a straight line <b>y = a0 + a1*x</b> to the data <b>(3, 7.148), (5, 10.231), (8, 13.509), (12, 16.434)</b>. Generalize the program to accept any data set.</div><div class='qline'><b>Given:</b> n = 4 points as above.</div><div class='qline'><b>Method (least squares):</b> <code>a1 = (n*Sxy - Sx*Sy) / (n*Sxx - Sx^2)</code>, <code>a0 = (Sy - a1*Sx) / n</code>. Note: a heading of the form y = a/(a+bx) in some copies is a typo — the data, code and result are linear. Result: <b>y = 4.7354 + 1.0136 x</b>.</div>",
+program: String.raw`import numpy as np
+
+_demo = ["4", "3", "7.148", "5", "10.231", "8", "13.509", "12", "16.434"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+n = int(float(ask("How many data points? ")))
+x = np.zeros(n)
+y = np.zeros(n)
+
+print("Enter data:")
+for i in range(n):
+    x[i] = float(ask(f"x[{i}] = "))
+    y[i] = float(ask(f"y[{i}] = "))
+
+sumX = np.sum(x)
+sumY = np.sum(y)
+sumX2 = np.sum(x * x)
+sumXY = np.sum(x * y)
+
+b = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX)
+a = (sumY - b*sumX) / n   # intercept (some copies wrongly fix a = 1)
+
+print("\nCoefficients are:")
+print("a0 (intercept): ", a)
+print("a1 (slope): ", b)
+print(f"And equation is: y = {a:0.4f} + {b:0.4f} x")`,
+terminal: String.raw`How many data points? 4
+Enter data:
+x[0] = 3
+y[0] = 7.148
+x[1] = 5
+y[1] = 10.231
+x[2] = 8
+y[2] = 13.509
+x[3] = 12
+y[3] = 16.434
+
+Coefficients are:
+a0 (intercept):  4.735391304347828
+a1 (slope):  1.013586956521739
+And equation is: y = 4.7354 + 1.0136 x`,
+plain: "Least squares fit y = a0 + a1*x  (n = 4)\nSx = 28, Sy = 47.322, Sxx = 242, Sxy = 360.335\n---------------------------------------------------------\na1 (slope)     = 1.0135869\na0 (intercept) = 4.7353913\n---------------------------------------------------------\ny = 4.7354 + 1.0136 x"
+},
+{
+n: 8,
+title: "Straight line fit Y = a₀ + a₁x + plot (6 points)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Fit a straight line <b>Y = a0 + a1*x</b> to <b>xi = 1..6, Yi = 2.4, 3.1, 3.5, 4.2, 5.0, 6.0</b> and draw the scatter plot with the line of best fit.</div><div class='qline'><b>Given:</b> x = [1,2,3,4,5,6], y = [2.4,3.1,3.5,4.2,5.0,6.0].</div><div class='qline'><b>Method:</b> <code>numpy.polyfit(x, y, 1)</code> gives slope a1 and intercept a0; plot with matplotlib. Result: <b>Y = 1.5933 + 0.6971 x</b>.</div>",
+program: String.raw`import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.array([1, 2, 3, 4, 5, 6])
+y = np.array([2.4, 3.1, 3.5, 4.2, 5.0, 6.0])
+
+a1, a0 = np.polyfit(x, y, 1)  # slope, intercept
+print(a1, a0)
+
+plt.scatter(x, y, label="Data")
+plt.plot(x, a1*x + a0, label=f"y = {a0:.4f} + {a1:.4f}x")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()`,
+terminal: String.raw`0.6971428571428568 1.593333333333333
+<Figure: scatter of 6 points with best-fit line>`,
+plain: "Fit Y = a0 + a1*x to x = 1..6, Y = 2.4,3.1,3.5,4.2,5.0,6.0\n---------------------------------------------------------\na1 (slope)     = 0.6971428571\na0 (intercept) = 1.5933333333\n---------------------------------------------------------\nY = 1.5933 + 0.6971 x   (+ scatter plot with best-fit line)"
+},
+{
+n: 9,
+title: "∫₀¹ dx/(1+x²) by Trapezoidal & Simpson ⅓ (h = 0.5, 0.25, 0.125)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Evaluate <b>I = integral from 0 to 1 of dx/(1+x^2)</b> (= pi/4), correct to 3 decimal places, by the <b>Trapezoidal</b> rule and <b>Simpson 1/3</b> rule with <b>h = 0.5, 0.25, 0.125</b> (n = 2, 4, 8).</div><div class='qline'><b>Given:</b> f(x) = 1/(1+x^2), limits 0 to 1.</div><div class='qline'><b>Method:</b> <code>Trap = h/2 * [f0 + fN + 2*sum]</code>, <code>Simp13 = h/3 * [f0 + fN + 4*odd + 2*even]</code>. Exact value pi/4 = 0.7853981634.</div>",
+program: String.raw`def f(x):
+    return 1 / (1 + x*x)
+
+def trapezoidal(x0, xn, n):
+    h = (xn - x0) / n
+    s = f(x0) + f(xn)
+    for i in range(1, n):
+        s += 2 * f(x0 + i*h)
+    return s * h / 2
+
+def simpson13(x0, xn, n):
+    h = (xn - x0) / n
+    s = f(x0) + f(xn)
+    for i in range(1, n):
+        s += (2 if i % 2 == 0 else 4) * f(x0 + i*h)
+    return s * h / 3
+
+_demo = ["0", "1"]
+def ask(prompt):
+    try:
+        s = input(prompt)
+    except EOFError:
+        s = ""
+    s = s.strip()
+    if s == "":
+        s = _demo.pop(0) if _demo else "0"
+        print(s)
+    return s
+
+lower = float(ask("Enter lower limit of integration: "))
+upper = float(ask("Enter upper limit of integration: "))
+for sub in [2, 4, 8]:
+    t = trapezoidal(lower, upper, sub)
+    s = simpson13(lower, upper, sub)
+    print(f"n = {sub}: Trapezoidal = {t:0.6f}, Simpson 1/3 = {s:0.6f}")`,
+terminal: String.raw`Enter lower limit of integration: 0
+Enter upper limit of integration: 1
+n = 2: Trapezoidal = 0.775000, Simpson 1/3 = 0.783333
+n = 4: Trapezoidal = 0.782794, Simpson 1/3 = 0.785392
+n = 8: Trapezoidal = 0.784747, Simpson 1/3 = 0.785398`,
+plain: "I = integral 0->1 dx/(1+x^2) = pi/4 = 0.7853981634\n---------------------------------------------------------\nh (n)        Trapezoidal    Simpson 1/3\n0.5 (2)      0.775000       0.783333\n0.25 (4)     0.782794       0.785392\n0.125 (8)    0.784747       0.785398\n---------------------------------------------------------\nSimpson reaches 3 decimals already at h = 0.25"
+},
+{
+n: 10,
+title: "∫₀¹ dx/(1+x) by Romberg (= ln 2)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Evaluate <b>I = integral from 0 to 1 of dx/(1+x)</b> (= ln 2), correct to 3 decimal places, by <b>Romberg's method</b>.</div><div class='qline'><b>Given:</b> f(x) = 1/(1+x), limits 0 to 1.</div><div class='qline'><b>Method:</b> repeated trapezoidal halves + Richardson extrapolation <code>R(i,j) = R(i,j-1) + (R(i,j-1)-R(i-1,j-1))/(4^j - 1)</code>. Self-contained code (no scipy). Final result: <b>0.6931471806</b>.</div>",
+program: String.raw`def f(x):
+    return 1 / (1 + x)
+
+def romberg(a, b, max_iter=6):
+    R = [[0]*max_iter for _ in range(max_iter)]
+    h = b - a
+    R[0][0] = 0.5*h*(f(a) + f(b))
+    print(f"1  {h:0.6f}  {R[0][0]:0.6f}")
+    for i in range(1, max_iter):
+        h /= 2
+        s = sum(f(a + (2*k-1)*h) for k in range(1, 2**(i-1)+1))
+        R[i][0] = 0.5*R[i-1][0] + h*s
+        for j in range(1, i+1):
+            R[i][j] = R[i][j-1] + (R[i][j-1]-R[i-1][j-1])/(4**j - 1)
+        row = "  ".join(f"{R[i][j]:0.6f}" for j in range(i+1))
+        print(f"{2**i}  {h:0.6f}  {row}")
+    return R[max_iter-1][max_iter-1]
+
+print(f"\nFinal result: {romberg(0, 1):0.10f}")`,
+terminal: String.raw`1  1.000000  0.750000
+2  0.500000  0.708333  0.694444
+4  0.250000  0.697024  0.693254  0.693175
+8  0.125000  0.694122  0.693155  0.693148  0.693147
+16  0.062500  0.693391  0.693148  0.693147  0.693147  0.693147
+32  0.031250  0.693208  0.693147  0.693147  0.693147  0.693147  0.693147
+
+Final result: 0.6931471806`,
+plain: "I = integral 0->1 dx/(1+x) = ln 2, by Romberg extrapolation\n---------------------------------------------------------\nStart  (trapezoidal, h = 1) : 0.750000\nFinish (32 panels)          : 0.6931471806\n---------------------------------------------------------\nFinal result = 0.6931471806  (= ln 2, correct to 6+ decimals)\nFull Richardson table : see OUTPUT SCREEN."
+},
+{
+n: 11,
+title: "∫₀¹ √(1−x²) dx = π/4 by Trapezoidal + Simpson ⅓ + ⅜",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Verify <b>I = integral from 0 to 1 of sqrt(1-x^2) dx = pi/4 (about 0.785398163)</b> by the <b>Trapezoidal</b> rule, <b>Simpson 1/3</b> and <b>Simpson 3/8</b> rules, each with <b>n = 10, 20, 30, 40, 50</b>.</div><div class='qline'><b>Given:</b> f(x) = sqrt(1-x^2), limits 0 to 1.</div><div class='qline'><b>Method:</b> <code>Trap = h/2*[ends + 2*mid]</code>, <code>Simp13 = h/3*[ends + 4*odd + 2*even]</code>, <code>Simp38 = 3h/8*[ends + 3*others + 2*every-third]</code>.</div>",
+program: String.raw`import math
+
+def f(x):
+    return math.sqrt(max(0.0, 1 - x*x))
+
+def trapezoidal(x0, xn, n):
+    h = (xn - x0) / n
+    s = f(x0) + f(xn)
+    for i in range(1, n):
+        s += 2 * f(x0 + i*h)
+    return s * h / 2
+
+def simpson13(x0, xn, n):
+    h = (xn - x0) / n
+    s = f(x0) + f(xn)
+    for i in range(1, n):
+        s += (2 if i % 2 == 0 else 4) * f(x0 + i*h)
+    return s * h / 3
+
+def simpson38(x0, xn, n):
+    h = (xn - x0) / n
+    s = f(x0) + f(xn)
+    for i in range(1, n):
+        s += (2 if i % 3 == 0 else 3) * f(x0 + i*h)
+    return s * 3 * h / 8
+
+for n in [10, 20, 30, 40, 50]:
+    print(f"n = {n}: Trap = {trapezoidal(0, 1, n):0.6f}, "
+          f"Simp1/3 = {simpson13(0, 1, n):0.6f}, "
+          f"Simp3/8 = {simpson38(0, 1, n):0.6f}")`,
+terminal: String.raw`n = 10: Trap = 0.776130, Simp1/3 = 0.781752, Simp3/8 = 0.772277
+n = 20: Trap = 0.782116, Simp1/3 = 0.784112, Simp3/8 = 0.781762
+n = 30: Trap = 0.783611, Simp1/3 = 0.784698, Simp3/8 = 0.784546
+n = 40: Trap = 0.784237, Simp1/3 = 0.784944, Simp3/8 = 0.783756
+n = 50: Trap = 0.784567, Simp1/3 = 0.785073, Simp3/8 = 0.784476`,
+plain: "I = integral 0->1 sqrt(1-x^2) dx = pi/4 = 0.7853981634\n---------------------------------------------------------\nn        Trapezoidal   Simpson 1/3   Simpson 3/8\n10       0.776130      0.781752      0.772277\n20       0.782116      0.784112      0.781762\n30       0.783611      0.784698      0.784546\n40       0.784237      0.784944      0.783756\n50       0.784567      0.785073      0.784476\n---------------------------------------------------------\nAll three converge to pi/4; Simpson 1/3 is closest."
+},
+{
+n: 12,
+title: "Modified Euler — y′ = x² + y, y(0) = 1, y(0.1)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find <b>y(0.1)</b> given <b>y(0) = 1</b> and <b>y' = x^2 + y</b>, by the <b>Modified Euler (Heun)</b> method with h = 0.05.</div><div class='qline'><b>Given:</b> x = 0, y = 1, xn = 0.1, h = 0.05.</div><div class='qline'><b>Method:</b> predictor <code>y* = y + h*f(x,y)</code>; corrector <code>y = y + h/2*(f(x,y) + f(x+h,y*))</code>. Exact y = 3e^x - x^2 - 2x - 2; result <b>y(0.1) = 1.105508</b>.</div>",
+program: String.raw`def f(x, y):
+    return x*x + y
+
+def predict(x, y, h):
+    return y + h * f(x, y)
+
+def correct(x, y, x1, y1, h):
+    # single Heun correction (standard Modified Euler: one predictor + one corrector)
+    return y + 0.5*h*(f(x, y) + f(x1, y1))
+
+x, y = 0.0, 1.0
+xn, h = 0.1, 0.05
+while x < xn - 1e-12:
+    x1 = x + h
+    y = correct(x, y, x1, predict(x, y, h), h)
+    x = x1
+
+print(f"The final value of y at x = {x} is : {y}")`,
+terminal: String.raw`The final value of y at x = 0.1 is : 1.1055078906250002`,
+plain: "y' = x^2 + y, y(0) = 1, h = 0.05  (Modified Euler / Heun)\n---------------------------------------------------------\ny(0.1) = 1.105508\n---------------------------------------------------------\nExact y = 3e^x - x^2 - 2x - 2 gives y(0.1) = 1.105513"
+},
+{
+n: 13,
+title: "RK2 & RK4 — dy/dx = y − x, y(0) = 2; y(0.1), y(0.2)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find <b>y(0.1) and y(0.2)</b> for <b>dy/dx = y - x, y(0) = 2</b>, correct to 4 decimal places, by the <b>2nd-order (Heun)</b> and <b>4th-order Runge-Kutta</b> methods; compare the results.</div><div class='qline'><b>Given:</b> x0 = 0, y0 = 2, h = 0.1.</div><div class='qline'><b>Method:</b> RK-2 Heun <code>y += (k1+k2)/2</code>; RK-4 <code>y += (k1+2k2+2k3+k4)/6</code>. Exact: <code>y = x + 1 + e^x</code> — y(0.1) = 2.205171, y(0.2) = 2.421403.</div>",
+program: String.raw`def dydx(x, y):
+    return y - x
+
+def rk2_heun(x0, y0, x, h):
+    # 2nd order (Heun): k1 = h f(x0,y0); k2 = h f(x0+h, y0+k1); y += (k1+k2)/2
+    n = round((x - x0) / h)
+    y = y0
+    for _ in range(n):
+        k1 = h * dydx(x0, y)
+        k2 = h * dydx(x0 + h, y + k1)
+        y = y + 0.5 * (k1 + k2)
+        x0 = x0 + h
+    return y
+
+def rk4(x0, y0, x, h):
+    n = int((x - x0) / h)
+    y = y0
+    for _ in range(n):
+        k1 = h * dydx(x0, y)
+        k2 = h * dydx(x0 + 0.5*h, y + 0.5*k1)
+        k3 = h * dydx(x0 + 0.5*h, y + 0.5*k2)
+        k4 = h * dydx(x0 + h, y + k3)
+        y = y + (k1 + 2*k2 + 2*k3 + k4) / 6.0
+        x0 = x0 + h
+    return y
+
+print("RK-2: y(0.1) =", rk2_heun(0, 2, 0.1, 0.1))
+print("RK-2: y(0.2) =", rk2_heun(0, 2, 0.2, 0.1))
+print("RK-4: y(0.1) =", rk4(0, 2, 0.1, 0.1))
+print("RK-4: y(0.2) =", rk4(0, 2, 0.2, 0.1))`,
+terminal: String.raw`RK-2: y(0.1) = 2.205
+RK-2: y(0.2) = 2.421025
+RK-4: y(0.1) = 2.2051708333333333
+RK-4: y(0.2) = 2.4214025708506943`,
+plain: "dy/dx = y - x, y(0) = 2, h = 0.1   (exact y = x + 1 + e^x)\n---------------------------------------------------------\n           y(0.1)      y(0.2)\nRK-2 Heun  2.205000    2.421025\nRK-4       2.205171    2.421403\nExact      2.205171    2.421403\n---------------------------------------------------------\nRK-4 matches exact to 6 decimals."
+},
+{
+n: 14,
+title: "Euler vs Modified Euler vs RK4 — y′ = 3x + y/2, y(0)=1",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find <b>y(0.2)</b> for the initial value problem <b>y' = 3x + y/2, y(0) = 1</b>, with <b>h = 0.2, 0.1, 0.05</b>, by <b>Euler</b>, <b>Modified Euler (Heun)</b> and <b>4th-order Runge-Kutta</b>; compare the results.</div><div class='qline'><b>Given:</b> x0 = 0, y0 = 1, x = 0.2.</div><div class='qline'><b>Method:</b> Euler <code>y += h*f</code>; Heun predictor-corrector; RK-4 weighted average. Exact <code>y = -6x - 12 + 13e^(x/2)</code> gives y(0.2) = <b>1.16722193</b>.</div>",
+program: String.raw`def func(x, y):
+    return 3*x + (y/2)
+
+def euler(x0, y0, x, h):
+    y, xx = y0, x0
+    while xx < x - 1e-12:
+        y = y + h * func(xx, y)
+        xx += h
+    return y
+
+def heun(x0, y0, x, h):
+    y, xx = y0, x0
+    while xx < x - 1e-12:
+        yp = y + h * func(xx, y)
+        y = y + h/2 * (func(xx, y) + func(xx+h, yp))
+        xx += h
+    return y
+
+def rk4(x0, y0, x, h):
+    y, xx = y0, x0
+    n = int((x - x0)/h)
+    for _ in range(n):
+        k1 = h*func(xx, y)
+        k2 = h*func(xx+0.5*h, y+0.5*k1)
+        k3 = h*func(xx+0.5*h, y+0.5*k2)
+        k4 = h*func(xx+h, y+k3)
+        y += (k1 + 2*k2 + 2*k3 + k4)/6.0
+        xx += h
+    return y
+
+for h in [0.2, 0.1, 0.05]:
+    print(f"h = {h}: Euler = {euler(0, 1, 0.2, h):0.6f}, "
+          f"Heun = {heun(0, 1, 0.2, h):0.6f}, "
+          f"RK4 = {rk4(0, 1, 0.2, h):0.6f}")`,
+terminal: String.raw`h = 0.2: Euler = 1.100000, Heun = 1.165000, RK4 = 1.167221
+h = 0.1: Euler = 1.132500, Heun = 1.166645, RK4 = 1.167222
+h = 0.05: Euler = 1.149568, Heun = 1.167075, RK4 = 1.167222`,
+plain: "y' = 3x + y/2, y(0) = 1, find y(0.2)   (exact 1.16722193)\n---------------------------------------------------------\nh        Euler       Heun        RK-4\n0.2      1.100000    1.165000    1.167221\n0.1      1.132500    1.166645    1.167222\n0.05     1.149568    1.167075    1.167222\n---------------------------------------------------------\nRK-4 is exact to 6 decimals even at h = 0.2."
+},
+{
+n: 15,
+title: "RK4 — Y′ = 1 + Y², y(0) = 0; y(0.8), y(1.0)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Find <b>y(0.8) and y(1.0)</b> (and y(0.1) as a check) by solving <b>Y' = 1 + Y^2, y(0) = 0</b> with the <b>4th-order Runge-Kutta</b> method, h = 0.2.</div><div class='qline'><b>Given:</b> x0 = 0, y0 = 0.</div><div class='qline'><b>Method:</b> classical RK-4. Exact solution <code>y = tan(x)</code>: y(0.1) = 0.100335, y(0.8) = 1.029637, y(1.0) = 1.557352.</div>",
+program: String.raw`def dydx(x, y):
+    return 1 + y*y
+
+def runge_kutta(x0, y0, x, h):
+    n = int((x - x0)/h)
+    y = y0
+    for _ in range(n):
+        k1 = h * dydx(x0, y)
+        k2 = h * dydx(x0 + 0.5*h, y + 0.5*k1)
+        k3 = h * dydx(x0 + 0.5*h, y + 0.5*k2)
+        k4 = h * dydx(x0 + h, y + k3)
+        y = y + (k1 + 2*k2 + 2*k3 + k4) / 6.0
+        x0 = x0 + h
+    return y
+
+print("y(0.1) =", runge_kutta(0, 0, 0.1, 0.1))
+print("y(0.8) =", runge_kutta(0, 0, 0.8, 0.2))
+print("y(1.0) =", runge_kutta(0, 0, 1.0, 0.2))`,
+terminal: String.raw`y(0.1) = 0.10033458907816413
+y(0.8) = 1.029636624958974
+y(1.0) = 1.5573516911576377`,
+plain: "Y' = 1 + Y^2, y(0) = 0, RK-4 h = 0.2   (exact y = tan x)\n---------------------------------------------------------\nx        RK-4          tan x\n0.1      0.100335      0.100335\n0.8      1.029637      1.029639\n1.0      1.557352      1.557408"
+},
+{
+n: 16,
+title: "RK4 — y′ = xy, y(1) = 2; y(1.4)",
+problem: "<div class='qlabel'>QUESTION</div><div class='qline'><b>Statement:</b> Solve <b>y' = x*y</b> for <b>x = 1.4</b> with <b>y(1) = 2</b>, by the <b>4th-order Runge-Kutta</b> method, h = 0.2 (check with h = 0.1).</div><div class='qline'><b>Given:</b> x0 = 1, y0 = 2, x = 1.4.</div><div class='qline'><b>Method:</b> classical RK-4, n = (x-x0)/h steps. Exact <code>y = 2*exp((x^2-1)/2)</code> gives y(1.4) = <b>3.232156</b>. Note: 2.49214... is only the first step y(1.2), not y(1.4).</div>",
+program: String.raw`def dydx(x, y):
+    return x * y
+
+def runge_kutta(x0, y0, x, h):
+    n = int(round((x - x0)/h))
+    y = y0
+    for _ in range(n):
+        k1 = h * dydx(x0, y)
+        k2 = h * dydx(x0 + 0.5*h, y + 0.5*k1)
+        k3 = h * dydx(x0 + 0.5*h, y + 0.5*k2)
+        k4 = h * dydx(x0 + h, y + k3)
+        y = y + (k1 + 2*k2 + 2*k3 + k4) / 6.0
+        x0 = x0 + h
+    return y
+
+print("y(1.4), h=0.2 =", runge_kutta(1, 2, 1.4, 0.2))
+print("y(1.4), h=0.1 =", runge_kutta(1, 2, 1.4, 0.1))`,
+terminal: String.raw`y(1.4), h=0.2 = 3.232106557327133
+y(1.4), h=0.1 = 3.232146003715676`,
+plain: "y' = x*y, y(1) = 2, RK-4   (exact y = 2*exp((x^2-1)/2))\n---------------------------------------------------------\ny(1.4), h = 0.2 : 3.232107\ny(1.4), h = 0.1 : 3.232146\nExact y(1.4) = 3.232156"
+}
+];
+
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function highlight(code){
+  let e = esc(code);
+  return e.replace(/(#[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\b(import|from|def|return|for|while|if|else|elif|in|range|print|input|int|float|as|with|None|True|False|break|continue|lambda|not|and|or|pass)\b|\b(\d+\.\d+|\d+)\b/g,
+    function(m, cmt, str, kw, num){
+      if (cmt) return '<span class="cmt">' + cmt + '</span>';
+      if (str) return '<span class="str">' + str + '</span>';
+      if (kw) return '<span class="kw">' + kw + '</span>';
+      if (num) return '<span class="num">' + num + '</span>';
+      return m;
+    });
+}
+const tocList = document.getElementById("tocList");
+const pracTitle = document.getElementById("pracTitle");
+const pracMeta = document.getElementById("pracMeta");
+const pracProblem = document.getElementById("pracProblem");
+const codeEl = document.getElementById("codeEl");
+const termPre = document.getElementById("termPre");
+const termTitle = document.getElementById("termTitle");
+const plainView = document.getElementById("plainView");
+const termView = document.getElementById("termView");
+const pageInfo = document.getElementById("pageInfo");
+const tabProg = document.getElementById("tabProg");
+const tabOut = document.getElementById("tabOut");
+const programPage = document.getElementById("programPage");
+const outputPage = document.getElementById("outputPage");
+
+PRACTICALS.forEach((p, i) => {
+  const b = document.createElement("button");
+  b.innerHTML = "<span class='n'>" + p.n + "</span> " + esc(p.title).slice(0, 52);
+  b.title = p.title;
+  b.onclick = () => { cur = i; render(); };
+  tocList.appendChild(b);
+});
+
+function render(){
+  const p = PRACTICALS[cur];
+  [...tocList.children].forEach((b, i) => b.classList.toggle("active", i === cur));
+  pracTitle.textContent = "Practical " + p.n + " — " + p.title;
+  pracMeta.textContent = "Practical " + p.n + " of " + PRACTICALS.length;
+  pracProblem.innerHTML = p.problem;
+  codeEl.innerHTML = highlight(p.program);
+  termPre.textContent = p.terminal;
+  termTitle.textContent = "OUTPUT SCREEN — practical_" + p.n + ".py";
+  tabProg.classList.toggle("active", tab === "program");
+  tabOut.classList.toggle("active", tab === "output");
+  programPage.hidden = tab !== "program";
+  outputPage.hidden = tab !== "output";
+  pageInfo.textContent = "Practical " + p.n + " / " + PRACTICALS.length + " — " + (tab === "program" ? "Page 1: Program (INPUT)" : "Page 2: Output — OUTPUT SCREEN");
+  window.scrollTo({top: 0});
+}
+tabProg.onclick = () => { tab = "program"; render(); };
+tabOut.onclick = () => { tab = "output"; render(); };
+document.getElementById("prevBtn").onclick = () => { cur = (cur - 1 + PRACTICALS.length) % PRACTICALS.length; render(); };
+document.getElementById("nextBtn").onclick = () => { cur = (cur + 1) % PRACTICALS.length; render(); };
+document.getElementById("copyProgBtn").onclick = async () => {
+  try { await navigator.clipboard.writeText(PRACTICALS[cur].program); alert("Program copied."); }
+  catch(e){ alert("Copy failed — select the code manually."); }
+};
+document.getElementById("copyOutBtn").onclick = async () => {
+  const t = PRACTICALS[cur].terminal;
+  try { await navigator.clipboard.writeText(t); alert("Output copied."); }
+  catch(e){ alert("Copy failed."); }
+};
+function buildPrint(single){
+  const pa = document.getElementById("printArea");
+  const items = single ? [PRACTICALS[cur]] : PRACTICALS;
+  let h = "<div style='font-family:Arial,sans-serif;color:#000;'>";
+  h += "<h1 style='text-align:center;'>Numerical Methods with Python — Practical File</h1>";
+  h += "<p style='text-align:center;'>Submitted by <b>SANTOSH SINGH</b>, MSc Mathematics</p>";
+  h += "<p style='text-align:center;'>Page 1 of each practical: Program (INPUT) | Page 2: Output — OUTPUT SCREEN</p>";
+  h += "<p style='text-align:center;font-size:12px;'>Programs are all tested and all outputs are seen during testing — no false output found.</p>";
+  h += "<h3 style='margin-top:14px;font-size:19px;'>Index</h3>";
+  h += "<table style='width:98%;margin:0 auto;border-collapse:collapse;table-layout:fixed;font-size:17px;line-height:1.45;'><tr><th style='border:1px solid #000;background:#eee;padding:6px 8px;font-size:15px;width:7%;'>S.No.</th><th style='border:1px solid #000;background:#eee;padding:6px 8px;font-size:15px;'>Practical (Program)</th><th style='border:1px solid #000;background:#eee;padding:6px 8px;font-size:15px;width:13%;'>Program Page</th><th style='border:1px solid #000;background:#eee;padding:6px 8px;font-size:15px;width:13%;'>Output Page</th></tr>";
+  items.forEach((ip, idx) => {
+    const zb = idx % 2 ? "background:#f2f2f2;" : "";
+    h += "<tr style='" + zb + "'><td style='border:1px solid #000;padding:7px 10px;text-align:center;'>" + ip.n + "</td><td style='border:1px solid #000;padding:7px 10px;'>" + esc(ip.title) + "</td><td style='border:1px solid #000;padding:7px 10px;text-align:center;'>" + (idx*2+2) + "</td><td style='border:1px solid #000;padding:7px 10px;text-align:center;'>" + (idx*2+3) + "</td></tr>";
+  });
+  h += "</table>";
+  h += "<p style='font-size:12px;'>Each practical starts on a fresh page: Program (INPUT) first, Output (OUTPUT SCREEN) next.</p>";
+  items.forEach(p => {
+    h += "<div style='break-before:page;'>";
+    h += "<h2>Practical " + p.n + " — " + esc(p.title) + "</h2>";
+    h += "<div>" + p.problem + "</div>";
+    h += "<h3>Page 1 — Program (INPUT)</h3>";
+    h += "<pre style='background:#fff;color:#000;white-space:pre-wrap;font-size:10pt;line-height:1.3;border:1.5px solid #000;padding:6px;font-family:Consolas,monospace;'>«INPUT program — copy exactly»\n" + esc(p.program) + "</pre>";
+    h += "<div style='break-before:page;'><h3>Page 2 — Output (OUTPUT)</h3>";
+    h += "<h4 style='background:#fff;color:#000;border:1.5px solid #000;padding:6px 10px;'>OUTPUT SCREEN — exact terminal output</h4><pre style='background:#fff;color:#000;border:1.5px solid #000;padding:10px;white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.55;'>" + esc(p.terminal) + "</pre>";
+    h += "</div>";
+    h += "</div>";
+  });
+  h += "<div style='break-before:page;text-align:center;padding-top:110px;'>";
+  h += "<div style='font-size:15px;letter-spacing:.2em;'>POWERED BY</div>";
+  h += "<div style='font-size:28px;font-weight:800;margin:8px 0;'>YOS</div>";
+  h += "<div style='font-size:15px;'>Future Project Developer</div>";
+  h += "<div style='width:120px;margin:20px auto 0;border-top:2px solid #000;'></div>";
+  h += "<div style='font-size:15px;margin-top:16px;'><b>Suraj Singh</b> — Project Manager</div>";
+  h += "</div>";
+  h += "</div>";
+  pa.innerHTML = h;
+}
+let wantSinglePrint = false;
+document.getElementById("printOneBtn").onclick = () => { wantSinglePrint = true; buildPrint(true); window.print(); };
+document.getElementById("printAllBtn").onclick = () => { wantSinglePrint = false; buildPrint(false); window.print(); };
+window.addEventListener("beforeprint", () => { if (!wantSinglePrint) buildPrint(false); });
+window.addEventListener("afterprint", () => { wantSinglePrint = false; });
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") document.getElementById("nextBtn").click();
+  if (e.key === "ArrowLeft") document.getElementById("prevBtn").click();
+});
+render();
+window.PRACTICALS = PRACTICALS;
+</script>
